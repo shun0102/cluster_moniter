@@ -44,7 +44,7 @@ namespace :deploy do
   end
   
   task :start, :roles => :app do
-    run "forever #{node_script}"
+    run "forever start #{deploy_to}/current/#{node_script}"
   end
 
   task :stop, :roles => :app do
