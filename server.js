@@ -1,3 +1,4 @@
+var CONFIG = require('./config');
 var WebSocketServer = require('websocket').server;
 var fs = require('fs');
 
@@ -45,8 +46,8 @@ ws.on('request', function(request) {
     console.log(request.origin);
     console.log(request.requestedProtocols);
     var connection = request.accept(null, null);
-    var log_dir = "/Users/shun/log/";
-    var log_file = log_dir + get_latest(log_dir);
+    var log_dir = CONFIG.LOGDIR;
+    var log_file = log_dir + "/" + get_latest(log_dir);
     var tail = require('child_process').spawn("tail", ["-f", log_file]);
     tail.stdout.on('data', function (data) {
         var lines = data.toString().split("\n");

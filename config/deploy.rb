@@ -44,12 +44,15 @@ namespace :deploy do
   end
   
   task :start, :roles => :app do
+    run "export NODE_ENV=production"
     run "forever start #{deploy_to}/current/#{node_script}"
+    run "ruby #{deploy_to}/current/run.rb 50030 &"
   end
 
   task :stop, :roles => :app do
     #TODO
-    run "foerever stop 0"
+    run "pkill -f node"
+    run "pkill -f ruby"
   end
 
   task :restart, :roles => :app do
