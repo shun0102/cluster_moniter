@@ -31,8 +31,8 @@ var http = require('http').createServer (
 );
 
 http.listen(
-    '8000', function() {
-        console.log('listen:8000');
+    CONFIG.PORT, function() {
+        console.log('listen:' + CONFIG.PORT);
     }
 );
 
