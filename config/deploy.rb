@@ -1,6 +1,6 @@
-set :application, "websocket-moniter"
+set :application, "cluster-moniter"
 set :scm,         :git
-set :repository,  "git://github.com/shun0102/cluster-moniter.git"
+set :repository,  "git://github.com/shun0102/cluster_moniter.git"
 set :branch,      "master"
 set :deploy_via,  :remote_cache
 set :home,        "/home/mikami"
@@ -12,7 +12,7 @@ set :user, "mikami"
 set :use_sudo, false
 set :default_run_options, :pty => true
 
-role :app, "xxx.xxx.xxx.xxx"
+role :app, "tsukuba000.intrigger.omni.hpcc.jp"
 
 set :shared_children, %w(log node_modules)
 
@@ -44,7 +44,7 @@ namespace :deploy do
   end
   
   task :start, :roles => :app do
-    run "forever #{deploy_to}/#{node_script}"
+    run "forever #{node_script}"
   end
 
   task :stop, :roles => :app do
