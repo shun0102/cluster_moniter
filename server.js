@@ -3,7 +3,7 @@ var WebSocketServer = require('websocket').server;
 var fs = require('fs');
 
 function get_date(file) {
-    var regrep = "iostat_log\.([0-9]{4})([0-9]{2})([0-9]{2}).*"
+    var regrep = "iostat_log\.([0-9]{4})([0-9]{2})([0-9]{2})\..*"
     var re = new RegExp(regrep);
     if (!file.match(re)) {
         return null;

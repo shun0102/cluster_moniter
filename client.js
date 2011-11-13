@@ -273,7 +273,7 @@ function updateGraph(data, param) {
 
     for (var i in barHash) {
         for (var j in barHash[i]) {
-            if (current_stats[i][j][params[1]] == 0) {
+            if (!current_stats[i][j] || current_stats[i][j][params[1]] == 0) {
                 barHash[i][j].scale.y = 1 / max_params[params[0]];
             } else {
                 barHash[i][j].scale.y = current_stats[i][j][params[1]] / max_params[params[0]];
