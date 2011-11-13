@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html> 
+  <head>
+    <meta charset="utf-8">
+    <title>node-websocket-server test</title>
+    <script type="text/javascript" src="./jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="./lib/Three.js" ></script>
+    <script type="text/javascript" src="./lib/RequestAnimationFrame.js" ></script>
+    <script type="text/javascript" src="./client.js" ></script>
+    <link href="./stylesheets/base.css" media="all" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div id="info">
+      <div>
+        <h3>ログ</h3>
+        <textarea name="log" id="log"></textarea>
+      </div>
+      <div id="select">
+        <h3>表示パラメータ</h3>
+        <select name="property" id="property">
+          <option value="cpu.system">cpu.system</option>
+          <option value="cpu.user">cpu.user</option>
+          <option value="cpu.idle">cpu.idle</option>
+          <option value="disk.rsect">disk.rsect</option>
+          <option value="disk.wsect">disk.wsect</option>
+          <option value="net.rbytes">net.rbytes</option>
+          <option value="net.tbytes">net.tbytes</option>
+          <option value="memory.swap">memory.swap</option>
+        </select>
+      </div>
+      <div id="stat">
+        <h3>情報</h3>
+        <table id="stats_table" border="1" cellspacing="0" cellpadding="0">
+          <tr>
+            <th width="200">hostname</th>
+            <th width="50">name</th>
+            <th>info</th>
+          </tr>
+          <tr>
+            <td class="stats" id="hostname">N/A</td>
+            <td class="stats" id="name">N/A</td>
+            <td class="stats" id="stats_info">
+              <textarea name="stats_info_area" id="stats_info_area">aa</textarea>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div id="container"></div>
+  </body>
+</html>
