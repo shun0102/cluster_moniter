@@ -2,9 +2,11 @@ var renderer, scene, camera, controls, projector, container, hash, conn;
 var paused = false;
 var mouse = { x: 0, y: 0 };
 var current_stats = {};
-var host = "tsukuba000.intrigger.omni.hpcc.jp";
-var port = 50070;
+//var host = "tsukuba000.intrigger.omni.hpcc.jp";
+var host = "localhost";
+var port = 3000;
 var barHash = {};
+var barGraph;
 var windowWidth, windowHeight;
 var marginWidth = 8;
 var marginHeight = 155;
@@ -18,6 +20,18 @@ THREE.CenterAlign = 0;
 THREE.RightAlign = -1;
 THREE.TopAlign = -1;
 THREE.BottomAlign = 1;
+var textBoard;
+function addText(text, x, y, z) {
+    var title = alignPlane(createText2D(text), 0, 0);
+    title.scale.set(0.25, 0.25, 0.25);
+    title.position.x = x;
+    title.position.z = z;
+    title.position.y = y;
+    title.rotation.x = -Math.PI/2;
+
+    textBoard.add(title);
+    scene.add(textBoard);
+}
 
 function createTextCanvas(text, color, font, size) {
     size = size || 24;
@@ -143,7 +157,10 @@ function animate(t) {
 
         for(var i in barHash) {
             for(var j in barHash[i]) {
-                barHash[i][j].materials[ 0 ].color.setHex( 0xFFAA55 );
+                //barHash[i][j].materials[ 0 ].color.setHex( 100, 100, 0 );
+                //var h = barHash[i][j].scale.y;
+                var h = 0.125 - (Math.min(barHash[i][j].scale.y, 1) / 8);
+                barHash[i][j].materials[ 0 ].color.setHSV( h, 1, 1);
             }
         }
         if ( c ) {
@@ -158,19 +175,21 @@ function animate(t) {
 };
 
 function stat(hostname, key) {
-    var data = current_stats[hostname][key];
-    $('#hostname').html( hostname );
-    $('#name').html( key );
-    var text = "";
-    for( var i in data) {
-        text += i + ":" + data[i];
-    };
-    $('#stats_info_area').html(text);
+    if (current_stats[hostname]) {
+        var data = current_stats[hostname][key];
+        $('#hostname_area').html( hostname );
+        $('#name_area').html( key );
+        var text = "";
+        for( var i in data) {
+            text += i + ":" + data[i];
+        };
+        $('#stats_info_area').html(text);
+    }
 }
 
 function clearStat() {
-    $('#hostname').html("N/A");
-    $('#name').html("N/A");
+    $('#hostname_area').html("N/A");
+    $('#name_area').html("N/A");
     $('#stats_info_area').html("N/A");
 }
 
@@ -207,7 +226,7 @@ function addBar(hostname, key, x, y, z) {
     var mesh = new THREE.Mesh(geo, mat);
     mesh.position.x = x - 80;
     mesh.position.y = y;
-    mesh.position.z = z;
+    mesh.position.z = z + 40;
     mesh.castShadow = mesh.receiveShadow = true;
     mesh.name = hostname;
     mesh.key = key;
@@ -217,7 +236,6 @@ function addBar(hostname, key, x, y, z) {
     THREE.Collisions.colliders.push( mc );
 };
 
-var barGraph;
 function alertStats() {
     current_stats;
 }
@@ -225,23 +243,43 @@ function alertStats() {
 function initGraph(param) {
     if (barGraph) {
         scene.remove(barGraph);
+        scene.remove(textBoard);
     }
     barGraph = new THREE.Object3D();
+    textBoard = new THREE.Object3D();
     scene.add(barGraph);
     var xLength = 0;
     for (var i in current_stats) {
         xLength += 1;
     }
 
-    zIndex = 0;
+    var hostlist = [];
+    var host_namelist = {};
+
     for (var i in current_stats) {
-        xIndex = 0;
-        barHash[i] = {};
+        hostlist.push(i);
+        var namelist = [];
         for (var j in current_stats[i]) {
-            var x = xIndex*16,
-            y = 0,
-            z = zIndex*16;
-            addBar(i, j, x, y, z);
+            if (j != "cpu") {
+                namelist.push(j);
+            }
+        }
+        host_namelist[i] = namelist.sort();
+    }
+    hostlist = hostlist.sort();
+
+    var zIndex = 0;
+    for (var i = 0; i < hostlist.length; i++) {
+        var xIndex = 0;
+        hostname = hostlist[i];
+        barHash[hostname] = {};
+        var y=0,
+        z = zIndex*(-16);
+        addText(hostname, -100, 1, z + 40);
+
+        for (var j = 0; j < host_namelist[hostname].length; j++) {
+            var x = xIndex*10;
+            addBar(hostname, host_namelist[hostname][j], x, y, z);
             xIndex += 1;
         }
         zIndex += 1;
@@ -263,7 +301,8 @@ function updateGraph(data, param) {
         log("not change");
     } else {
         if(global_type != params[0]) {
-            current_stats = {}
+            current_stats = {};
+            barHash = {};
         }
         current_stats[hash.hostname] = hash.stats[params[0]];
         //グラフ全体書き
