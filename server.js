@@ -1,6 +1,7 @@
 var CONFIG = require('./config');
 var WebSocketServer = require('websocket').server;
 var fs = require('fs');
+var param = "cpu";
 
 function get_date(file) {
     var regrep = "iostat_log\.([0-9]{4})([0-9]{2})([0-9]{2})\\..*"
@@ -41,6 +42,7 @@ ws = new WebSocketServer({
     autoAcceptConnections: false
 });
 
+
 ws.on('request', function(request) {
     console.log('request.');
     console.log(request.origin);
@@ -49,13 +51,22 @@ ws.on('request', function(request) {
     var log_dir = CONFIG.LOGDIR;
     var log_file = log_dir + "/" + get_latest(log_dir);
     var tail = require('child_process').spawn("tail", ["-f", log_file]);
+
     tail.stdout.on('data', function (data) {
         var lines = data.toString().split("\n");
 
         for (var i=0; i<lines.length; i++) {
             var records = lines[i].split("\t");
             if (records[2]) {
-                connection.sendUTF(records[2]);
+                try {
+                    var hash = JSON.parse(records[2].toString());
+                    var sendData = {'hostname':hash.hostname,
+                                   'stats':{}}
+                    sendData.stats[param] = hash.stats[param]
+                    connection.sendUTF( JSON.stringify(sendData) );
+                } catch(e) {
+                    console.log('error');
+                }
             }
         }
     });
@@ -64,6 +75,7 @@ ws.on('request', function(request) {
         if (message.type === 'utf8') {
             console.log("Received Message: " + message.utf8Data);
             connection.sendUTF(message.utf8Data.toUpperCase());
+            param = message.utf8Data;
         }
         else if (message.type === 'binary') {
             console.log("Received Binary Message of " + message.binaryData.length + " bytes");

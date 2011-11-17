@@ -13,7 +13,7 @@ case "test":
     break;
 default:
     CONFIG.HOST = "localhost";
-    CONFIG.PORT = 8000;
+    CONFIG.PORT = 3000;
     CONFIG.LOGDIR = "/Users/shun/log";
 }
 

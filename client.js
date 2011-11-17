@@ -358,4 +358,10 @@ window.onload = function() {
         controls.screen.height = windowHeight;
         camera.radius = ( windowWidth + windowHeight ) / 4;
     }
+
+    $("#property").change(function(){
+        var parameter = $(this).val().split(".")[0];
+        conn.send(parameter);
+    });
 }
+
