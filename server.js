@@ -1,7 +1,7 @@
 var CONFIG = require('./config');
 var WebSocketServer = require('websocket').server;
 var fs = require('fs');
-var param = "cpu";
+var params = ["cpu", "system"];
 
 function get_date(file) {
     var regrep = "iostat_log\.([0-9]{4})([0-9]{2})([0-9]{2})\\..*"
@@ -50,8 +50,36 @@ ws.on('request', function(request) {
     var connection = request.accept(null, null);
     var log_dir = CONFIG.LOGDIR;
     var log_file = log_dir + "/" + get_latest(log_dir);
-    var tail = require('child_process').spawn("tail", ["-f", log_file]);
 
+    var pos = fs.statSync(log_file).size;
+
+    fs.watchFile(log_file, function(curr, prev) {
+        var sendData = [];
+        var size = fs.statSync(log_file).size;
+        var length = size - pos;
+        var fd = fs.openSync(log_file, "r");
+
+        try {
+            var bytes = fs.readSync(fd, length, pos, "utf-8");
+            var text = bytes[0].replace(/^[^{]*/gm, "").replace(/\n/gm, ",");
+            text = "["  + text.substring(0, text.length - 1) + "]";
+
+            var jsonArray = JSON.parse(text);
+            for (var i = 0, length = jsonArray.length; i < length; i++) {
+                var hash = {'hostname':jsonArray[i].hostname,
+                            'stats':{}}
+                hash.stats[params[0]] = jsonArray[i].stats[params[0]];
+                sendData.push(hash);
+            }
+            connection.sendUTF(JSON.stringify(sendData));
+        } catch(e) {
+            console.log(e.message);
+        }
+        pos += length;
+    })
+
+    /*
+    var tail = require('child_process').spawn("tail", ["-f", log_file]);
     tail.stdout.on('data', function (data) {
         var lines = data.toString().split("\n");
 
@@ -62,7 +90,7 @@ ws.on('request', function(request) {
                     var hash = JSON.parse(records[2].toString());
                     var sendData = {'hostname':hash.hostname,
                                    'stats':{}}
-                    sendData.stats[param] = hash.stats[param]
+                    sendData.stats[params[0]] = hash.stats[params[0]]
                     connection.sendUTF( JSON.stringify(sendData) );
                 } catch(e) {
                     console.log('error');
@@ -70,12 +98,13 @@ ws.on('request', function(request) {
             }
         }
     });
+    */
 
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
             console.log("Received Message: " + message.utf8Data);
             connection.sendUTF(message.utf8Data.toUpperCase());
-            param = message.utf8Data;
+            params = message.utf8Data.split(".");
         }
         else if (message.type === 'binary') {
             console.log("Received Binary Message of " + message.binaryData.length + " bytes");

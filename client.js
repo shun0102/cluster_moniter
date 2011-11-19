@@ -157,8 +157,6 @@ function animate(t) {
 
         for(var i in barHash) {
             for(var j in barHash[i]) {
-                //barHash[i][j].materials[ 0 ].color.setHex( 100, 100, 0 );
-                //var h = barHash[i][j].scale.y;
                 var h = 0.125 - (Math.min(barHash[i][j].scale.y, 1) / 8);
                 barHash[i][j].materials[ 0 ].color.setHSV( h, 1, 1);
             }
@@ -188,9 +186,9 @@ function stat(hostname, key) {
 }
 
 function clearStat() {
-    $('#hostname_area').html("N/A");
-    $('#name_area').html("N/A");
-    $('#stats_info_area').html("N/A");
+    $('#hostname_area').html("");
+    $('#name_area').html("");
+    $('#stats_info_area').html("");
 }
 
 function log(data){
@@ -287,24 +285,34 @@ function initGraph(param) {
 }
 
 var global_type;
+
 function updateGraph(data, param) {
     try{
-        var hash = JSON.parse(data.toString());
+        var jsonArray = JSON.parse(data.toString());
     } catch (e) {
         return;
     }
     var params = param.split(".");
+
+    //current_statsの更新
+    if(global_type != params[0]) {
+        current_stats = {};
+        barHash = {};
+    }
+
+    var newHost = false
+    for (var i = 0, length = jsonArray.length; i < length; i++) {
+        if (current_stats[jsonArray[i].hostname]) {
+            newHost = true;
+        }
+        current_stats[jsonArray[i].hostname] = jsonArray[i].stats[params[0]];
+    }
+
     //新規ホスト数orパラメータの変更があったか確認
-    if( global_type == params[0] && current_stats[hash.hostname]) {
-        current_stats[hash.hostname] = hash.stats[params[0]];
+    if( global_type == params[0] && newHost) {
         //グラフの一部更新
         log("not change");
     } else {
-        if(global_type != params[0]) {
-            current_stats = {};
-            barHash = {};
-        }
-        current_stats[hash.hostname] = hash.stats[params[0]];
         //グラフ全体書き
         initGraph(params[1])
         log("changed");
@@ -360,7 +368,7 @@ window.onload = function() {
     }
 
     $("#property").change(function(){
-        var parameter = $(this).val().split(".")[0];
+        var parameter = $(this).val();
         conn.send(parameter);
     });
 }
