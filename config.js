@@ -5,7 +5,7 @@ var env = process.env.NODE_ENV;
 switch (env) {
 case "production":
     CONFIG.HOST = "tsukuba000.intrigger.omni.hpcc.jp";
-    CONFIG.PORT = 3000;
+    CONFIG.PORT = 50070;
     CONFIG.LOGDIR = "/data/local/mikami/log";
     break;
 case "test":
