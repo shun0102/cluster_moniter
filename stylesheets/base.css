@@ -42,3 +42,7 @@ div {
 #stats_info {
     width:55%;
 }
+
+textarea {
+    width:90%;
+}

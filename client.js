@@ -11,8 +11,8 @@ var marginWidth = 8;
 var marginHeight = 155;
 var fov = 45;
 var max_params = { cpu:100,
-                   disk:100,
-                   net:100}
+                   disk:80000,
+                   net:125000000}
 
 THREE.LeftAlign = 1;
 THREE.CenterAlign = 0;
