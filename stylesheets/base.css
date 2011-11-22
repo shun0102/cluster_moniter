@@ -2,6 +2,10 @@
     height:130px;
 }
 
+#log_area {
+    width:20%;
+}
+
 #info div {
     float:left;
     padding:5px;
@@ -10,7 +14,7 @@
 }
 
 #select {
-    width:150px;
+    width:15%;
 }
 
 h3 {
@@ -19,37 +23,22 @@ h3 {
     background-color:lightgray;
 }
 
-#log {
-    height:6em;
-    width:20em;
-}
-
-#stats_info {
-    width:500px;
-}
-
-#stats_info_area {
-    width:450px;
-    height:50px;
-    font-size:16px;
-}
-
-#hostname {
-    width:200px;
-}
-
-#hostname_area {
-    width:180px;
-}
-
-#name {
-    width:150px;
-}
-
-#name_area {
-    width:130px;
+#stat {
+    width:60%;
 }
 
 div {
     text-align:center;
+}
+
+#hostname {
+    width:20%;
+}
+
+#name {
+    width:20%
+}
+
+#stats_info {
+    width:55%;
 }
