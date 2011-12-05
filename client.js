@@ -2,8 +2,9 @@ var renderer, scene, camera, controls, projector, container, hash, conn;
 var paused = false;
 var mouse = { x: 0, y: 0 };
 var current_stats = {};
-var host = "tsukuba000.intrigger.omni.hpcc.jp";
-var port = 50070;
+//var host = "tsukuba000.intrigger.omni.hpcc.jp";
+var host = "localhost";
+var port = 3000;
 var barHash = {};
 var barGraph;
 var windowWidth, windowHeight;
@@ -11,8 +12,10 @@ var marginWidth = 8;
 var marginHeight = 155;
 var fov = 45;
 var max_params = { cpu:100,
-                   disk:80000,
-                   net:125000000}
+                   dsk:1024*1024,
+                   net:1024*10242,
+                   memory:1024*1024*1024*32
+                 }
 
 THREE.LeftAlign = 1;
 THREE.CenterAlign = 0;
@@ -212,6 +215,8 @@ var connect = function() {
         };
         conn.onopen = function() {
             log("opened");
+            var param = $('#property').val();
+            conn.send(param);
         };
     }
 };
@@ -233,14 +238,11 @@ function addBar(hostname, key, x, y, z) {
     THREE.Collisions.colliders.push( mc );
 };
 
-function alertStats() {
-    current_stats;
-}
-
 function initGraph(param) {
     if (barGraph) {
         scene.remove(barGraph);
         scene.remove(textBoard);
+        THREE.Collisions.colliders = [];
     }
     barGraph = new THREE.Object3D();
     textBoard = new THREE.Object3D();
@@ -257,9 +259,7 @@ function initGraph(param) {
         hostlist.push(i);
         var namelist = [];
         for (var j in current_stats[i]) {
-            if (j != "cpu") {
-                namelist.push(j);
-            }
+            namelist.push(j);
         }
         host_namelist[i] = namelist.sort();
     }
@@ -287,7 +287,7 @@ var global_type;
 
 function updateGraph(data, param) {
     try{
-        var jsonArray = JSON.parse(data.toString());
+        var hash = JSON.parse(data.toString());
     } catch (e) {
         return;
     }
@@ -300,11 +300,12 @@ function updateGraph(data, param) {
     }
 
     var newHost = false
-    for (var i = 0, length = jsonArray.length; i < length; i++) {
-        if (current_stats[jsonArray[i].hostname]) {
+    for (var i in hash) {
+        if (!current_stats[i]) {
             newHost = true;
+            log(i);
         }
-        current_stats[jsonArray[i].hostname] = jsonArray[i].stats[params[0]];
+        current_stats[i] = hash[i];
     }
 
     //新規ホスト数orパラメータの変更があったか確認
@@ -313,22 +314,47 @@ function updateGraph(data, param) {
         log("not change");
     } else {
         //グラフ全体書き
-        initGraph(params[1])
+        initGraph(params[1]);
         log("changed");
     }
 
     for (var i in barHash) {
         for (var j in barHash[i]) {
-            if (!current_stats[i][j] || current_stats[i][j][params[1]] == 0) {
+            var value = toNumber(current_stats[i][j]);
+            if (value == 0) {
                 barHash[i][j].scale.y = 1 / max_params[params[0]];
             } else {
-                barHash[i][j].scale.y = current_stats[i][j][params[1]] / max_params[params[0]];
+                barHash[i][j].scale.y = value / max_params[params[0]];
             }
         }
     }
 
     global_type = params[0]
     render();
+}
+
+function toNumber(unit_value) {
+    var unit = unit_value.charAt(unit_value.length -1);
+    var factor = 1;
+    switch ( unit ) {
+    case "B":
+        factor = 1;
+        break;
+    case "k":
+        factor = 1024;
+        break;
+    case "M":
+        factor = Math.pow(1024, 2);
+        break;
+    case "G":
+        factor = Math.pow(1024, 3);
+        break;
+    default:
+        return unit_value
+    }
+    var value = unit_value.substring(0, unit_value.length -1);
+    value = parseInt(value) * factor;
+    return value
 }
 
 function onDocumentMouseMove( event ) {

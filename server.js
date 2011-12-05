@@ -1,10 +1,10 @@
 var CONFIG = require('./config');
 var WebSocketServer = require('websocket').server;
 var fs = require('fs');
-var params = ["cpu", "system"];
+var params = ["cpu", "sys"];
 
 function get_date(file) {
-    var regrep = "iostat_log\.([0-9]{4})([0-9]{2})([0-9]{2})\\..*"
+    var regrep = "dstat_log\.([0-9]{4})([0-9]{2})([0-9]{2})\\..*"
     var re = new RegExp(regrep);
     if (!file.match(re)) {
         return null;
@@ -54,7 +54,7 @@ ws.on('request', function(request) {
     var pos = fs.statSync(log_file).size;
 
     fs.watchFile(log_file, function(curr, prev) {
-        var sendData = [];
+        var sendData = {};
         var size = fs.statSync(log_file).size;
         var length = size - pos;
         var fd = fs.openSync(log_file, "r");
@@ -66,39 +66,21 @@ ws.on('request', function(request) {
 
             var jsonArray = JSON.parse(text);
             for (var i = 0, length = jsonArray.length; i < length; i++) {
-                var hash = {'hostname':jsonArray[i].hostname,
-                            'stats':{}}
-                hash.stats[params[0]] = jsonArray[i].stats[params[0]];
-                sendData.push(hash);
+                var hash = {}
+                for (var j in jsonArray[i].dstat) {
+                    if (j.match("^" + params[0])) {
+                        hash[j] = jsonArray[i].dstat[j][params[1]];
+                    }
+                }
+                sendData[jsonArray[i].hostname] = hash;
             }
+            console.log(sendData);
             connection.sendUTF(JSON.stringify(sendData));
         } catch(e) {
             console.log(e.message);
         }
         pos += length;
     })
-
-    /*
-    var tail = require('child_process').spawn("tail", ["-f", log_file]);
-    tail.stdout.on('data', function (data) {
-        var lines = data.toString().split("\n");
-
-        for (var i=0; i<lines.length; i++) {
-            var records = lines[i].split("\t");
-            if (records[2]) {
-                try {
-                    var hash = JSON.parse(records[2].toString());
-                    var sendData = {'hostname':hash.hostname,
-                                   'stats':{}}
-                    sendData.stats[params[0]] = hash.stats[params[0]]
-                    connection.sendUTF( JSON.stringify(sendData) );
-                } catch(e) {
-                    console.log('error');
-                }
-            }
-        }
-    });
-    */
 
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
