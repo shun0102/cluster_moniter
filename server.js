@@ -53,34 +53,29 @@ ws.on('request', function(request) {
 
     var pos = fs.statSync(log_file).size;
 
-    fs.watchFile(log_file, function(curr, prev) {
-        var sendData = {};
-        var size = fs.statSync(log_file).size;
-        var length = size - pos;
-        var fd = fs.openSync(log_file, "r");
-
-        try {
-            var bytes = fs.readSync(fd, length, pos, "utf-8");
-            var text = bytes[0].replace(/^[^{]*/gm, "").replace(/\n/gm, ",");
-            text = "["  + text.substring(0, text.length - 1) + "]";
-
-            var jsonArray = JSON.parse(text);
-            for (var i = 0, length = jsonArray.length; i < length; i++) {
-                var hash = {}
-                for (var j in jsonArray[i].dstat) {
-                    if (j.match("^" + params[0])) {
-                        hash[j] = jsonArray[i].dstat[j][params[1]];
-                    }
-                }
-                sendData[jsonArray[i].hostname] = hash;
-            }
-            console.log(sendData);
-            connection.sendUTF(JSON.stringify(sendData));
-        } catch(e) {
-            console.log(e.message);
-        }
-        pos += length;
-    })
+    var mongoTail = require('child_process').spawn("mongo-tail", ["-f", "-c", "dstat"]);
+    mongoTail.stdout.on('data', function (data) {
+	    try {
+		var sendData = {};
+		var dataStr = data.toString();
+		dataStr.replace(/([^\n]+)\n/g, function(m, line) {
+			//console.log(line);
+			var obj = JSON.parse(line);
+			var hash = {};
+			for (var j in obj.dstat) {
+			    if (j.match("^" + params[0])) {
+				hash[j] = obj.dstat[j][params[1]];
+			    }
+			}
+			sendData[obj.hostname] = hash;
+		    });
+		console.log("---");
+		console.log(sendData);
+		connection.sendUTF(JSON.stringify(sendData));
+	    } catch(e) {
+		console.log(e.message);
+	    }
+	});
 
     connection.on('message', function(message) {
         if (message.type === 'utf8') {

@@ -1,7 +1,7 @@
 require 'webrick'
 
 DOCUMENT_ROOT = './'
-DEFAULT_PORT=8080
+DEFAULT_PORT=50030
 
 port = ARGV[0].to_i
 
