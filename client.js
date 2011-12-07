@@ -193,8 +193,10 @@ function clearStat() {
     $('#stats_info_area').html("");
 }
 
+var count = 0;
 function log(data){
-    document.getElementById("log").innerHTML = data + "\n" + document.getElementById("log").innerHTML;
+    document.getElementById("log").innerHTML = count + ":" + data + "\n" + document.getElementById("log").innerHTML;
+    count += 1;
 }
 
 var connect = function() {
@@ -309,7 +311,7 @@ function updateGraph(data, param) {
     }
 
     //新規ホスト数orパラメータの変更があったか確認
-    if( global_type == params[0] && newHost) {
+    if( global_type == params[0] && !newHost) {
         //グラフの一部更新
         log("not change");
     } else {
