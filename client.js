@@ -174,17 +174,25 @@ function animate(t) {
     window.requestAnimationFrame(animate, renderer.domElement);
 };
 
+var statTS = 0;
+var statHostname;
+
 function stat(hostname, key) {
-    if (current_stats[hostname]) {
-        var data = current_stats[hostname][key];
-        $('#hostname_area').html( hostname );
-        $('#name_area').html( key );
-        var text = "";
-        for( var i in data) {
-            text += i + ":" + data[i];
-        };
-        $('#stats_info_area').html(text);
+    var today = new Date();
+    var now = today.getTime();
+    var interval = now - statTS;
+
+    if (interval >= 3000 || hostname != statHostname) {
+	var sendMsg = {'type':'dstat',
+		   'msg':hostname};
+	conn.send(JSON.stringify(sendMsg));
+	$('#hostname_area').html( hostname );
+	$('#name_area').html( key );
+	statTS = today.getTime();
+	statHostname = hostname
     }
+   
+
 }
 
 function clearStat() {
@@ -204,8 +212,18 @@ var connect = function() {
         conn = new WebSocket("ws://"+host+":"+port+"/test");
 
         conn.onmessage = function(evt) {
-            var param = $('#property').val();
-            updateGraph(evt.data, param);
+	    var data = JSON.parse(evt.data.toString());
+	    switch (data.type) {
+	    case "graph":
+		var param = $('#property').val();
+		updateGraph(evt.data, param);
+		break;
+	    case "parameter":
+		break;
+	    case "dstat":
+		$('#stats_info_area').html(JSON.stringify(data.dstat));
+		break;
+	    }            
         };
 
         conn.onerror = function() {
@@ -218,7 +236,9 @@ var connect = function() {
         conn.onopen = function() {
             log("opened");
             var param = $('#property').val();
-            conn.send(param);
+	    var sendMsg = {'type':'parameter',
+			   'msg':param};
+	    conn.send(JSON.stringify(sendMsg));
         };
     }
 };
@@ -303,11 +323,12 @@ function updateGraph(data, param) {
 
     var newHost = false
     for (var i in hash) {
-        if (!current_stats[i]) {
-            newHost = true;
-            log(i);
-        }
-        current_stats[i] = hash[i];
+	if (i != 'type') {
+	    if (!current_stats[i]) {
+		newHost = true;
+	    }
+	    current_stats[i] = hash[i];
+	}
     }
 
     //新規ホスト数orパラメータの変更があったか確認
@@ -396,7 +417,9 @@ window.onload = function() {
 
     $("#property").change(function(){
         var parameter = $(this).val();
-        conn.send(parameter);
+	var sendMsg = {'type':'parameter',
+		       'msg':parameter};
+        conn.send(JSON.stringify(sendMsg));
     });
 }
 
