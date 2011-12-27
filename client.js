@@ -8,8 +8,8 @@ var port = 50070;
 var barHash = {};
 var barGraph;
 var windowWidth, windowHeight;
-var marginWidth = 8;
-var marginHeight = 155;
+var marginWidth = 0;
+var marginHeight = 0;
 var fov = 45;
 var max_params = { cpu:100,
                    dsk:1024*1024,
@@ -112,8 +112,8 @@ function init() {
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(windowWidth, windowHeight);
 
-    container = document.createElement( 'div' );
-    document.body.appendChild( container );
+
+    container = document.getElementById('container');
     container.appendChild(renderer.domElement);
 
     renderer.setClearColorHex(0xEEEEEE, 1.0);
@@ -207,6 +207,32 @@ function log(data){
     count += 1;
 }
 
+var dataLine = "";
+function print(hash) {
+
+
+    var firstLine = "";
+    var secondLine = "";
+    //var prevLine = dataLine;
+    dataLine = "";
+    
+    for (var i in hash) {
+        firstLine += i;
+        firstLine += " -- "
+        for (var j in hash[i]) {
+            secondLine += j;
+            secondLine += " ";
+            dataLine += hash[i][j];
+            dataLine += " ";
+        }
+        secondLine += ":";
+        dataLine += ":";
+
+    }
+    var text = firstLine + "\n" + secondLine + "\n" + dataLine;
+    $('#stats_info_area').html(text);
+}
+
 var connect = function() {
     if (window["WebSocket"]) {
         conn = new WebSocket("ws://"+host+":"+port+"/test");
@@ -221,7 +247,7 @@ var connect = function() {
 	    case "parameter":
 		break;
 	    case "dstat":
-		$('#stats_info_area').html(JSON.stringify(data.dstat));
+		print(data.dstat);
 		break;
 	    }            
         };

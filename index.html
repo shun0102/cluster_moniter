@@ -10,13 +10,15 @@
     <link href="./stylesheets/base.css" media="all" rel="stylesheet" type="text/css" />
   </head>
   <body>
+    <div id="container"></div>
     <div id="info">
-      <div id="log_area">
-        <h3>ログ</h3>
-        <textarea name="log" id="log"></textarea>
-      </div>
       <div id="select">
-        <h3>表示パラメータ</h3>
+        <h3>Select display type</h3>
+        <select name="type" id="type">
+          <option value="total">total</option>
+          <option value="part">part</option>
+        </select>
+        <h3>Select parameter</h3>
         <select name="property" id="property">
           <option value="cpu.sys">cpu.sys</option>
           <option value="cpu.usr">cpu.usr</option>
@@ -30,29 +32,23 @@
           <option value="memory.cach">memory.cach</option>
           <option value="memory.free">memory.free</option>
         </select>
+        <br />
+        <div id="log_area">
+          <h3>info</h3>
+          hostname:
+          <textarea name="hostname_area" id="hostname_area"></textarea>
+          name:
+          <textarea name="name_area" id="name_area"></textarea>
+          <h3>log</h3>
+          <textarea name="log" id="log"></textarea>
+        </div>
       </div>
+
       <div id="stat">
-        <h3>情報</h3>
-        <table id="stats_table" border="1" cellspacing="0" cellpadding="0">
-          <tr>
-            <th width="200">hostname</th>
-            <th width="50">name</th>
-            <th>info</th>
-          </tr>
-          <tr>
-            <td class="stats" id="hostname">
-              <textarea name="hostnname_area" id="hostname_area"></textarea>
-            </td>
-            <td class="stats" id="name">
-              <textarea name="name_area" id="name_area"></textarea>
-            </td>
-            <td class="stats" id="stats_info">
-              <textarea name="stats_info_area" id="stats_info_area"></textarea>
-            </td>
-          </tr>
-        </table>
+        <textarea name="stats_info_area" id="stats_info_area" wrap="off"></textarea>
       </div>
+
     </div>
-    <div id="container"></div>
+
   </body>
 </html>

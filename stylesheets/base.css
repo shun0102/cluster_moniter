@@ -1,48 +1,49 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height:100%;
+}
+
 #info {
-    height:130px;
-}
-
-#log_area {
-    width:20%;
-}
-
-#info div {
-    float:left;
-    padding:5px;
-    border: 1px solid gray;
-    height:120px;
+    position: absolute;
+    top: 0px;
+    width:100%;
 }
 
 #select {
+    float:left;
     width:15%;
+    height:500px;
 }
 
 h3 {
     margin-top:3px;
     margin-bottom:3px;
-    background-color:lightgray;
-}
-
-#stat {
-    width:60%;
 }
 
 div {
     text-align:center;
 }
 
-#hostname {
-    width:20%;
-}
-
-#name {
-    width:20%
-}
-
-#stats_info {
-    width:55%;
-}
-
 textarea {
-    width:90%;
+    width:98%;
+    opacity: 0.8;
+}
+
+#stat {
+    float:left;
+    height:7em;
+    width:85%;
+    font-size:18px;
+}
+
+#stats_info_area {
+    height:100%;
+    background-color:black;
+    color:white;
+    font-size:18px;
+}
+
+#log {
+    height:200px;
 }
